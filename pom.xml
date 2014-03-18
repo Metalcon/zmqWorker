@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>de.metalcon</groupId>
+    <artifactId>pom</artifactId>
+    <version>0.0.1</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>zmq-worker</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <repositories>
+    <!-- Metalcon repository to resolve dependencies from -->
+    <repository>
+      <id>metalcon-depend</id>
+      <url>http://metalcon2.physik.uni-mainz.de:8080/mvn/</url>
+    </repository>
+  </repositories>
+
+  <properties>
+    <!-- version of JeroMQ -->
+    <jeromq.version>0.3.2</jeromq.version>
+    <!-- version of Commons Lang -->
+    <apache.commons-lang.version>3.3</apache.commons-lang.version>
+  </properties>
+
+  <dependencies>
+    <!-- ZeroMQ implementation JeroMQ for Java -->
+    <dependency>
+      <groupId>org.zeromq</groupId>
+      <artifactId>jeromq</artifactId>
+      <version>${jeromq.version}</version>
+    </dependency>
+    <!-- Apache Commons library used for (De)Serialization -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${apache.commons-lang.version}</version>
+    </dependency>
+  </dependencies>
+</project>
