@@ -6,7 +6,7 @@ ZeroMQ worker for backend components
 
 The ZeroMQ worker is a standalone worker for backend components that use ZeroMQ.  
 It takes care of deserialization and serialization of request and response objects.  
-Go to our [ZeroMQ page](/main/wiki/techZeroMQ) for more information concerning the flow here.
+Go to our [ZeroMQ page](../../../main/wiki/techZeroMQ) for more information concerning the flow here.
 
 ## Usage
 
