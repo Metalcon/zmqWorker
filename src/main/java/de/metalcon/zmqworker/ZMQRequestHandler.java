@@ -1,6 +1,6 @@
 package de.metalcon.zmqworker;
 
-import java.io.Serializable;
+import de.metalcon.zmqworker.responses.Response;
 
 /**
  * interface for request handler of backend components using ZeroMQ
@@ -15,8 +15,9 @@ public interface ZMQRequestHandler {
      * 
      * @param request
      *            request object
-     * @return response object
+     * @return response object<br>
+     *         <b>null</b>
      */
-    Serializable handleRequest(Object request);
+    Response handleRequest(Object request);
 
 }
