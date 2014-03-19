@@ -16,7 +16,7 @@ public interface ZMQRequestHandler {
      * @param request
      *            request object
      * @return response object<br>
-     *         <b>null</b>
+     *         <b>null</b> if the request object was unknown
      */
     Response handleRequest(Object request);
 

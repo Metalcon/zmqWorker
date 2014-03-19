@@ -5,6 +5,8 @@ import java.io.Serializable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.zeromq.ZMQ;
 
+import de.metalcon.zmqworker.responses.errors.ParsingErrorResponse;
+
 /**
  * ZeroMQ worker for backend components using ZeroMQ
  * 
@@ -14,7 +16,7 @@ import org.zeromq.ZMQ;
 public class ZMQWorker implements Runnable {
 
     /**
-     * number of ZeroMQ thread
+     * number of ZeroMQ threads
      */
     private static int NUM_THREADS = 1;
 
@@ -26,22 +28,32 @@ public class ZMQWorker implements Runnable {
     /**
      * ZeroMQ context
      */
-    private static ZMQ.Context CONTEXT = ZMQ.context(NUM_THREADS);
+    private static ZMQ.Context CONTEXT;//TODO = ZMQ.context(NUM_THREADS);
 
     /**
-     * ZeroMQ socket to send/receive messages
+     * ZeroMQ socket to receive messages
      */
-    private ZMQ.Socket socket;
+    private ZMQ.Socket socketReceive;
+
+    /**
+     * endpoint the worker will receive requests on
+     */
+    private String endpointReceive;
+
+    /**
+     * endpoint the worker will send responses on
+     */
+    private String endpointSend;
+
+    /**
+     * ZeroMQ socket to send messages
+     */
+    private ZMQ.Socket socketSend;
 
     /**
      * listener thread
      */
     private Thread thread;
-
-    /**
-     * endpoint the worker is listening on
-     */
-    private String endpoint;
 
     /**
      * handler for incoming requests
@@ -51,20 +63,35 @@ public class ZMQWorker implements Runnable {
     /**
      * create new ZeroMQ worker
      * 
-     * @param endpoint
-     *            endpoint the worker will listen on
+     * @param endpointReceive
+     *            endpoint the worker will receive requests on
+     * @param endpointSend
+     *            endpoint the worker will send responses on
      * @param requestHandler
      *            handler for incoming requests
      */
     public ZMQWorker(
-            String endpoint,
-            ZMQRequestHandler requestHandler) {
-        this.endpoint = endpoint;
+            String endpointReceive,
+            String endpointSend,
+            ZMQRequestHandler requestHandler,
+            ZMQ.Context context) {
+        this.endpointReceive = endpointReceive;
+        this.endpointSend = endpointSend;
         this.requestHandler = requestHandler;
 
-        socket = CONTEXT.socket(ZMQ.REP);
+        // TODO: remove
+        CONTEXT = context;
+        socketReceive = CONTEXT.socket(ZMQ.PULL);
+        socketSend = CONTEXT.socket(ZMQ.PUSH);
+
         NUM_WORKERS += 1;
-        socket.bind(endpoint);
+        socketReceive.bind(endpointReceive);
+        socketReceive.setSendBufferSize(100000);
+        socketReceive.setHWM(100000);
+
+        socketSend.bind(endpointSend);
+        socketSend.setSendBufferSize(100000);
+        socketSend.setHWM(100000);
         thread = new Thread(this);
     }
 
@@ -98,7 +125,8 @@ public class ZMQWorker implements Runnable {
     @Override
     public void run() {
         // TODO: use logging
-        System.out.println("i am serving on endpoint: " + endpoint);
+        System.out.println("i am receiving on endpoint: " + endpointReceive);
+        System.out.println("i am sending on endpoint: " + endpointSend);
 
         boolean error = false;
         Object request;
@@ -106,7 +134,7 @@ public class ZMQWorker implements Runnable {
 
         try {
             while (true) {
-                byte[] serializedRequest = socket.recv();
+                byte[] serializedRequest = socketReceive.recv();
                 if (serializedRequest == null) {
                     // error or shutdown
                     break;
@@ -119,20 +147,27 @@ public class ZMQWorker implements Runnable {
                 if (request != null) {
                     response = requestHandler.handleRequest(request);
 
-                    if (response == null) {
-                        response = "ERR: unhandled request";
-                    } else {
+                    if (response != null) {
                         serializedResponse =
                                 SerializationUtils.serialize(response);
                         if (serializedResponse != null) {
                             error = false;
                         } else {
-                            response = "ERR: response serialization failed";
+                            response =
+                                    new ParsingErrorResponse(
+                                            "response serialization failed",
+                                            null);
                         }
+                    } else {
+                        throw new IllegalStateException(
+                                "request handler returned null");
                     }
                 } else {
                     // deserialization failed
-                    response = "ERR: request deserialization failed";
+                    response =
+                            new ParsingErrorResponse(
+                                    "request deserialization failed",
+                                    "request has to implement Serializable");
                 }
 
                 // serialize generated response if an error occurred
@@ -144,7 +179,7 @@ public class ZMQWorker implements Runnable {
                     }
                 }
 
-                socket.send(serializedResponse);
+                socketSend.send(serializedResponse);
             }
         } finally {
             cleanUp();
@@ -155,7 +190,7 @@ public class ZMQWorker implements Runnable {
      * clean up after shutdown
      */
     protected void cleanUp() {
-        socket.close();
+        socketSend.close();
         NUM_WORKERS -= 1;
 
         if (NUM_WORKERS == 0) {
