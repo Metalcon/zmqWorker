@@ -8,7 +8,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>zmq-worker</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1.0</version>
 
   <repositories>
     <!-- Metalcon repository to resolve dependencies from -->
@@ -24,7 +24,7 @@
     <!-- version of Commons Lang -->
     <apache.commons-lang.version>3.3</apache.commons-lang.version>
     <!-- version of Metalcon API -->
-    <metalcon.api.version>0.0.1-SNAPSHOT</metalcon.api.version>
+    <metalcon.api.version>0.1.0</metalcon.api.version>
   </properties>
 
   <dependencies>
