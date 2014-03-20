@@ -23,6 +23,8 @@
     <jeromq.version>0.3.2</jeromq.version>
     <!-- version of Commons Lang -->
     <apache.commons-lang.version>3.3</apache.commons-lang.version>
+    <!-- version of Metalcon API -->
+    <metalcon.api.version>0.0.1-SNAPSHOT</metalcon.api.version>
   </properties>
 
   <dependencies>
@@ -37,6 +39,12 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${apache.commons-lang.version}</version>
+    </dependency>
+    <!-- basic Metalcon API holding requests/responses -->
+    <dependency>
+      <groupId>de.metalcon</groupId>
+      <artifactId>api</artifactId>
+      <version>${metalcon.api.version}</version>
     </dependency>
   </dependencies>
 </project>

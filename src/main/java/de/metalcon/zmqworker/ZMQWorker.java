@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.zeromq.ZMQ;
 
-import de.metalcon.zmqworker.responses.errors.ParsingErrorResponse;
+import de.metalcon.api.responses.errors.ParsingErrorResponse;
 
 /**
  * ZeroMQ worker for backend components using ZeroMQ
@@ -31,24 +31,14 @@ public class ZMQWorker implements Runnable {
     private static ZMQ.Context CONTEXT;//TODO = ZMQ.context(NUM_THREADS);
 
     /**
-     * ZeroMQ socket to receive messages
+     * ZeroMQ socket to receive/send messages
      */
-    private ZMQ.Socket socketReceive;
+    private ZMQ.Socket socket;
 
     /**
-     * endpoint the worker will receive requests on
+     * endpoint the worker will receive/send requests on
      */
-    private String endpointReceive;
-
-    /**
-     * endpoint the worker will send responses on
-     */
-    private String endpointSend;
-
-    /**
-     * ZeroMQ socket to send messages
-     */
-    private ZMQ.Socket socketSend;
+    private String endpoint;
 
     /**
      * listener thread
@@ -63,35 +53,27 @@ public class ZMQWorker implements Runnable {
     /**
      * create new ZeroMQ worker
      * 
-     * @param endpointReceive
-     *            endpoint the worker will receive requests on
-     * @param endpointSend
-     *            endpoint the worker will send responses on
+     * @param endpoint
+     *            endpoint the worker will serve on
      * @param requestHandler
      *            handler for incoming requests
      */
     public ZMQWorker(
-            String endpointReceive,
-            String endpointSend,
+            String endpoint,
             ZMQRequestHandler requestHandler,
             ZMQ.Context context) {
-        this.endpointReceive = endpointReceive;
-        this.endpointSend = endpointSend;
+        this.endpoint = endpoint;
         this.requestHandler = requestHandler;
 
         // TODO: remove
         CONTEXT = context;
-        socketReceive = CONTEXT.socket(ZMQ.PULL);
-        socketSend = CONTEXT.socket(ZMQ.PUSH);
-
+        socket = CONTEXT.socket(ZMQ.ROUTER);
         NUM_WORKERS += 1;
-        socketReceive.bind(endpointReceive);
-        socketReceive.setSendBufferSize(100000);
-        socketReceive.setHWM(100000);
 
-        socketSend.bind(endpointSend);
-        socketSend.setSendBufferSize(100000);
-        socketSend.setHWM(100000);
+        socket.bind(endpoint);
+        socket.setSendBufferSize(100000);
+        socket.setHWM(100000);
+
         thread = new Thread(this);
     }
 
@@ -125,8 +107,7 @@ public class ZMQWorker implements Runnable {
     @Override
     public void run() {
         // TODO: use logging
-        System.out.println("i am receiving on endpoint: " + endpointReceive);
-        System.out.println("i am sending on endpoint: " + endpointSend);
+        System.out.println("i am serving on endpoint: " + endpoint);
 
         boolean error = false;
         Object request;
@@ -134,7 +115,8 @@ public class ZMQWorker implements Runnable {
 
         try {
             while (true) {
-                byte[] serializedRequest = socketReceive.recv();
+                byte[] clientId = socket.recv();
+                byte[] serializedRequest = socket.recv();
                 if (serializedRequest == null) {
                     // error or shutdown
                     break;
@@ -179,7 +161,8 @@ public class ZMQWorker implements Runnable {
                     }
                 }
 
-                socketSend.send(serializedResponse);
+                socket.send(clientId, ZMQ.SNDMORE);
+                socket.send(serializedResponse);
             }
         } finally {
             cleanUp();
@@ -190,7 +173,7 @@ public class ZMQWorker implements Runnable {
      * clean up after shutdown
      */
     protected void cleanUp() {
-        socketSend.close();
+        socket.close();
         NUM_WORKERS -= 1;
 
         if (NUM_WORKERS == 0) {
