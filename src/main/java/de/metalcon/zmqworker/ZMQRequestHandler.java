@@ -1,6 +1,6 @@
 package de.metalcon.zmqworker;
 
-import de.metalcon.zmqworker.responses.Response;
+import de.metalcon.api.responses.Response;
 
 /**
  * interface for request handler of backend components using ZeroMQ
@@ -16,7 +16,10 @@ public interface ZMQRequestHandler {
      * @param request
      *            request object
      * @return response object<br>
-     *         <b>null</b> if the request object was unknown
+     *         <b>WARNING</b>: worker will be in an invalid state if you return
+     *         <b>null</b><br>
+     *         if you can not handle the request return usage error response
+     *         instead
      */
     Response handleRequest(Object request);
 
