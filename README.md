@@ -16,9 +16,12 @@ Go to our [ZeroMQ page](../../../main/wiki/techZeroMQ) for more information conc
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
-## Usage
+# Usage
 
 At first you have to create your request handler that implements `ZeroMQRequestHandler`.  
 In the only method this interface promises, you get a deserialized request object.  
 Check the request type via `instanceof` and do your magic.  
-Finally you return a `Serializable` response object that will be sent to the client automatically.
+Finally you return a response object derived from `Response` in the [basic API](../../../api) that will be sent to the client automatically.
+
+In the main method of your component you create a new worker instance and start it by calling the `start`-method.
+The worker stops if a `ShutdownRequest`, defined in the basic API, is received.
