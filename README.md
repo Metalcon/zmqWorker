@@ -19,7 +19,7 @@ Go to our [ZeroMQ page](../../../main/wiki/techZeroMQ) for more information conc
 # Usage
 
 At first you have to create your request handler that implements `ZeroMQRequestHandler`.  
-In the only method this interface promises, you get a deserialized object derived from `Request`, defined in the [basic API](../../../api).  
+In the only method this interface promises, you get a deserialized object derived from `Request`, defined in the [backend API](../../../backendApi).  
 Check the request type via `instanceof` and do your magic.  
 Finally you return a response object derived from `Response` that will be sent to the client automatically.
 
