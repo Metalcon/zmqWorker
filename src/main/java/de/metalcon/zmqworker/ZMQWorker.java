@@ -13,12 +13,7 @@ import de.metalcon.api.responses.errors.ParsingErrorResponse;
  * @author sebschlicht
  * 
  */
-public class ZMQWorker implements Runnable {
-
-    /**
-     * number of ZeroMQ threads
-     */
-    private static int NUM_THREADS = 1;
+public class ZMQWorker extends StoppableWorker {
 
     /**
      * worker instances in use
@@ -28,7 +23,7 @@ public class ZMQWorker implements Runnable {
     /**
      * ZeroMQ context
      */
-    private static ZMQ.Context CONTEXT;//TODO = ZMQ.context(NUM_THREADS);
+    private static ZMQ.Context CONTEXT;
 
     /**
      * ZeroMQ socket to receive/send messages
@@ -39,11 +34,6 @@ public class ZMQWorker implements Runnable {
      * endpoint the worker will receive/send requests on
      */
     private String endpoint;
-
-    /**
-     * listener thread
-     */
-    private Thread thread;
 
     /**
      * handler for incoming requests
@@ -65,37 +55,19 @@ public class ZMQWorker implements Runnable {
         this.endpoint = endpoint;
         this.requestHandler = requestHandler;
 
-        // TODO: remove
         CONTEXT = context;
-        socket = CONTEXT.socket(ZMQ.ROUTER);
-        NUM_WORKERS += 1;
-
-        socket.bind(endpoint);
-        socket.setSendBufferSize(100000);
-        socket.setHWM(100000);
-
-        thread = new Thread(this);
     }
 
-    /**
-     * checks if listener thread is alive: started and not died
-     * 
-     * @return true - if listener thread alive<br>
-     *         false otherwise
-     */
-    public boolean isRunning() {
-        return thread.isAlive();
-    }
-
-    /**
-     * start the worker's listener thread
-     * 
-     * @return true - if the thread was started<br>
-     *         false if already running
-     */
+    @Override
     public boolean start() {
-        if (!isRunning()) {
-            thread.start();
+        if (super.start()) {
+            NUM_WORKERS += 1;
+
+            socket = CONTEXT.socket(ZMQ.ROUTER);
+            socket.bind(endpoint);
+            socket.setSendBufferSize(100000);
+            socket.setHWM(100000);
+
             return true;
         }
         return false;
@@ -108,13 +80,14 @@ public class ZMQWorker implements Runnable {
     public void run() {
         // TODO: use logging
         System.out.println("i am serving on endpoint: " + endpoint);
+        running = true;
 
         boolean error = false;
         Object request;
         Serializable response;
 
         try {
-            while (true) {
+            while (!stopping) {
                 byte[] clientId = socket.recv();
                 byte[] serializedRequest = socket.recv();
                 if (serializedRequest == null) {
@@ -165,21 +138,33 @@ public class ZMQWorker implements Runnable {
                 socket.send(serializedResponse);
             }
         } finally {
+            running = false;
             cleanUp();
         }
+    }
+
+    /**
+     * stop the ZMQ worker and wait for its shutdown
+     */
+    @Override
+    public void stop() {
+        super.stop();
+
+        // close socket to leave listener loop
+        socket.close();
+
+        waitForShutdown();
     }
 
     /**
      * clean up after shutdown
      */
     protected void cleanUp() {
-        socket.close();
-        NUM_WORKERS -= 1;
+        // TODO: close socket if not closed yet
 
+        NUM_WORKERS -= 1;
         if (NUM_WORKERS == 0) {
             CONTEXT.term();
         }
-
-        thread.interrupt();
     }
 }
