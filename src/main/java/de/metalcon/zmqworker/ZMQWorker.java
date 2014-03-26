@@ -60,7 +60,7 @@ public class ZMQWorker extends StoppableWorker {
 
     @Override
     public boolean start() {
-        if (super.start()) {
+        if (!running) {
             NUM_WORKERS += 1;
 
             socket = CONTEXT.socket(ZMQ.ROUTER);
@@ -68,7 +68,7 @@ public class ZMQWorker extends StoppableWorker {
             socket.setSendBufferSize(100000);
             socket.setHWM(100000);
 
-            return true;
+            return super.start();
         }
         return false;
     }
