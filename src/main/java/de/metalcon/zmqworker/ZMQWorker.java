@@ -117,9 +117,7 @@ public class ZMQWorker extends StoppableWorker {
                 byte[] clientId = socket.recv();
                 byte[] serializedRequest = socket.recv();
                 if (serializedRequest == null) {
-                    // error or shutdown
-                    System.out.println("received" + ", " + running + ", "
-                            + stopping);
+                    // timed out, error or shutdown
                     continue;
                 }
 
