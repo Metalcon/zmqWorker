@@ -11,7 +11,7 @@ public abstract class StoppableWorker implements Runnable {
     /**
      * worker thread
      */
-    private Thread workerThread;
+    protected Thread workerThread;
 
     /**
      * worker status flag
@@ -68,7 +68,7 @@ public abstract class StoppableWorker implements Runnable {
      * 
      * @return worker status flag
      */
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return running;
     }
 
