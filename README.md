@@ -13,7 +13,7 @@ Go to our [ZeroMQ page](../../../main/wiki/techZeroMQ) for more information conc
     <dependency>
       <groupId>de.metalcon</groupId>
       <artifactId>zmq-worker</artifactId>
-      <version>0.2.0</version>
+      <version>0.2.1</version>
     </dependency>
 
 # Usage
