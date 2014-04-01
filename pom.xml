@@ -8,37 +8,29 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>zmq-worker</artifactId>
-  <version>0.2.1</version>
+  <version>0.3.1</version>
 
   <repositories>
     <!-- Metalcon repository to resolve dependencies from -->
     <repository>
       <id>metalcon-depend</id>
-      <url>http://metalcon2.physik.uni-mainz.de:8080/mvn/</url>
+      <url>http://develop.metalcon.de:8080/mvn/</url>
     </repository>
   </repositories>
 
   <properties>
-    <!-- version of JeroMQ -->
-    <jeromq.version>0.3.2</jeromq.version>
-    <!-- version of Commons Lang -->
-    <apache.commons-lang.version>3.3</apache.commons-lang.version>
+    <!-- version of ZMQ worker -->
+    <metalcon.zmqWorker.version>1.1.0</metalcon.zmqWorker.version>
     <!-- version of Metalcon API -->
     <metalcon.api.version>0.1.0</metalcon.api.version>
   </properties>
 
   <dependencies>
-    <!-- ZeroMQ implementation JeroMQ for Java -->
+    <!-- request dispatcher including ZMQ worker -->
     <dependency>
-      <groupId>org.zeromq</groupId>
-      <artifactId>jeromq</artifactId>
-      <version>${jeromq.version}</version>
-    </dependency>
-    <!-- Apache Commons library used for (De)Serialization -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>${apache.commons-lang.version}</version>
+      <groupId>net.hh</groupId>
+      <artifactId>RequestDispatcher</artifactId>
+      <version>${metalcon.zmqWorker.version}</version>
     </dependency>
     <!-- basic Metalcon API holding requests/responses -->
     <dependency>
