@@ -33,21 +33,31 @@ public abstract class Server<T extends Request > {
      */
     private ZmqConfig config;
 
+    /**
+     * create basic server for backend component<br>
+     * registers a shutdown hook calling <i>stop</i>
+     * 
+     * @param config
+     *            ZMQ configuration object
+     */
     public Server(
-            ZmqConfig config,
-            RequestHandler<T, Response> requestHandler) {
+            ZmqConfig config) {
         this.config = config;
 
         // initialize ZMQ context
         context = initZmqContext(config.getNumIOThreads());
 
-        // start ZMQ communication
-        worker =
-                new ZmqWorker<T, Response>(context, config.getEndpoint(),
-                        requestHandler);
-        if (!worker.isAlive()) {
-            throw new IllegalStateException("failed to start worker");
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    close();
+                } catch (Exception e) {
+                    // ship sinking
+                }
+            }
+        });
     }
 
     /**
@@ -58,9 +68,33 @@ public abstract class Server<T extends Request > {
     }
 
     /**
+     * start ZMQ communication
+     * 
+     * @param requestHandler
+     *            handler handling request objects of server request type
+     *            specified
+     * @return true - if worker was started<br>
+     *         false - if worker was started before and not stopped yet
+     * @throws IllegalStateException
+     *             if worker could not be started
+     */
+    public boolean start(RequestHandler<T, Response> requestHandler) {
+        if (worker == null) {
+            worker =
+                    new ZmqWorker<T, Response>(context, config.getEndpoint(),
+                            requestHandler);
+            if (!worker.isAlive()) {
+                throw new IllegalStateException("failed to start worker");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * stop ZMQ worker and close open context
      */
-    public void stop() {
+    public void close() {
         if (worker != null) {
             worker.close();
             worker = null;
