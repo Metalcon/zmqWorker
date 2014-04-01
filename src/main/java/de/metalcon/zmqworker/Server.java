@@ -83,9 +83,6 @@ public abstract class Server<T extends Request > {
             worker =
                     new ZmqWorker<T, Response>(context, config.getEndpoint(),
                             requestHandler);
-            if (!worker.isAlive()) {
-                throw new IllegalStateException("failed to start worker");
-            }
             return true;
         }
         return false;
