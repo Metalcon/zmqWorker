@@ -42,10 +42,15 @@ public abstract class Server<T extends Request > {
      */
     public Server(
             ZmqConfig config) {
-        this.config = config;
-
         // initialize ZMQ context
-        context = initZmqContext(config.getNumIOThreads());
+        this(config, initZmqContext(config.getNumIOThreads()));
+    }
+
+    public Server(
+            ZmqConfig config,
+            ZMQ.Context context) {
+        this.config = config;
+        this.context = context;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
 
@@ -83,6 +88,7 @@ public abstract class Server<T extends Request > {
             worker =
                     new ZmqWorker<T, Response>(context, config.getEndpoint(),
                             requestHandler);
+            worker.start();
             return true;
         }
         return false;
