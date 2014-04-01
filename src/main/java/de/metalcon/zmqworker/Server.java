@@ -35,6 +35,7 @@ public abstract class Server<T extends Request > {
 
     /**
      * create basic server for backend component<br>
+     * lives in a new ZMQ context according to configuration<br>
      * registers a shutdown hook calling <i>stop</i>
      * 
      * @param config
@@ -46,6 +47,15 @@ public abstract class Server<T extends Request > {
         this(config, initZmqContext(config.getNumIOThreads()));
     }
 
+    /**
+     * create basic server for backend component<br>
+     * registers a shutdown hook calling <i>stop</i>
+     * 
+     * @param config
+     *            ZMQ configuration object
+     * @param context
+     *            ZMQ context the worker lives in
+     */
     public Server(
             ZmqConfig config,
             ZMQ.Context context) {
