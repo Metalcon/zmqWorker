@@ -22,7 +22,7 @@
     <!-- version of ZMQ worker -->
     <metalcon.zmqWorker.version>1.3.0</metalcon.zmqWorker.version>
     <!-- version of Metalcon API -->
-    <metalcon.api.version>0.1.0</metalcon.api.version>
+    <metalcon.api.version>0.1.1</metalcon.api.version>
   </properties>
 
   <dependencies>
