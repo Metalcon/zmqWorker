@@ -7,7 +7,7 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>zmq-worker</artifactId>
+  <artifactId>zmq-worker-helper</artifactId>
   <version>0.4.0</version>
 
   <repositories>
