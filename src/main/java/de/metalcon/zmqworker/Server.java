@@ -1,10 +1,7 @@
 package de.metalcon.zmqworker;
 
-import net.hh.request_dispatcher.server.RequestHandler;
-import net.hh.request_dispatcher.server.ZmqWorker;
-
-import org.zeromq.ZMQ;
-
+import net.hh.request_dispatcher.RequestHandler;
+import net.hh.request_dispatcher.ZmqWorkerProxy;
 import de.metalcon.api.requests.Request;
 import de.metalcon.api.responses.Response;
 
@@ -16,17 +13,12 @@ import de.metalcon.api.responses.Response;
  * @param <T>
  *            more specific request type
  */
-public abstract class Server<T extends Request > {
+public abstract class Server<T extends Request > implements AutoCloseable {
 
     /**
-     * ZMQ context the worker lives in
+     * ZMQ worker proxy handling communication
      */
-    private ZMQ.Context context;
-
-    /**
-     * ZMQ worker handling communication
-     */
-    private ZmqWorker<T, Response> worker;
+    private ZmqWorkerProxy proxy;
 
     /**
      * ZMQ configuration object
@@ -35,7 +27,6 @@ public abstract class Server<T extends Request > {
 
     /**
      * create basic server for backend component<br>
-     * lives in a new ZMQ context according to configuration<br>
      * registers a shutdown hook calling <i>stop</i>
      * 
      * @param config
@@ -43,24 +34,7 @@ public abstract class Server<T extends Request > {
      */
     public Server(
             ZmqConfig config) {
-        // initialize ZMQ context
-        this(config, initZmqContext(config.getNumIOThreads()));
-    }
-
-    /**
-     * create basic server for backend component<br>
-     * registers a shutdown hook calling <i>stop</i>
-     * 
-     * @param config
-     *            ZMQ configuration object
-     * @param context
-     *            ZMQ context the worker lives in
-     */
-    public Server(
-            ZmqConfig config,
-            ZMQ.Context context) {
         this.config = config;
-        this.context = context;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
 
@@ -94,11 +68,10 @@ public abstract class Server<T extends Request > {
      *             if worker could not be started
      */
     public boolean start(RequestHandler<T, Response> requestHandler) {
-        if (worker == null) {
-            worker =
-                    new ZmqWorker<T, Response>(context, config.getEndpoint(),
-                            requestHandler);
-            worker.start();
+        if (proxy == null) {
+            proxy = new ZmqWorkerProxy(config.getEndpoint());
+            proxy.add(1, requestHandler);
+            proxy.startWorkers();
             return true;
         }
         return false;
@@ -107,20 +80,12 @@ public abstract class Server<T extends Request > {
     /**
      * stop ZMQ worker and close open context
      */
+    @Override
     public void close() {
-        if (worker != null) {
-            worker.close();
-            worker = null;
+        if (proxy != null) {
+            proxy.shutdown();
+            proxy = null;
         }
-        if (context != null) {
-            context.close();
-            context = null;
-        }
-    }
-
-    protected static ZMQ.Context initZmqContext(int numIOThreads) {
-        System.out.println("ZMQ IO threads: " + numIOThreads);
-        return ZMQ.context(numIOThreads);
     }
 
 }

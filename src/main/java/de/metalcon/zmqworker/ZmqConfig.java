@@ -9,11 +9,6 @@ package de.metalcon.zmqworker;
 public interface ZmqConfig {
 
     /**
-     * @return number of IO threads to use
-     */
-    int getNumIOThreads();
-
-    /**
      * @return endpoint to listen on
      */
     String getEndpoint();
