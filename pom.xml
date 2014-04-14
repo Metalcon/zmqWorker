@@ -3,12 +3,12 @@
   <parent>
     <groupId>de.metalcon</groupId>
     <artifactId>pom</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.6</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>zmq-worker-helper</artifactId>
-  <version>0.4.0</version>
+  <version>0.4.1</version>
 
   <repositories>
     <!-- Metalcon repository to resolve dependencies from -->
@@ -30,13 +30,13 @@
     <dependency>
       <groupId>net.hh</groupId>
       <artifactId>RequestDispatcher</artifactId>
-      <version>${metalcon.zmqWorker.version}</version>
+      <version>${metalcon.dispatcher.version}</version>
     </dependency>
     <!-- basic Metalcon API holding requests/responses -->
     <dependency>
       <groupId>de.metalcon</groupId>
-      <artifactId>api</artifactId>
-      <version>${metalcon.api.version}</version>
+      <artifactId>backend-api</artifactId>
+      <version>${metalcon.backendApi.version}</version>
     </dependency>
   </dependencies>
 </project>
