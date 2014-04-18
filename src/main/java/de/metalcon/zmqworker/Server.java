@@ -2,6 +2,9 @@ package de.metalcon.zmqworker;
 
 import net.hh.request_dispatcher.RequestHandler;
 import net.hh.request_dispatcher.ZmqWorkerProxy;
+
+import org.apache.log4j.Logger;
+
 import de.metalcon.api.requests.Request;
 import de.metalcon.api.responses.Response;
 
@@ -14,6 +17,11 @@ import de.metalcon.api.responses.Response;
  *            more specific request type
  */
 public abstract class Server<T extends Request > implements AutoCloseable {
+
+    /**
+     * server log
+     */
+    protected static Logger LOG = Logger.getLogger("backend server");
 
     /**
      * ZMQ worker proxy handling communication
@@ -41,6 +49,7 @@ public abstract class Server<T extends Request > implements AutoCloseable {
             @Override
             public void run() {
                 try {
+                    LOG.debug("shutting down...");
                     close();
                 } catch (Exception e) {
                     // ship sinking
@@ -72,6 +81,7 @@ public abstract class Server<T extends Request > implements AutoCloseable {
             proxy = new ZmqWorkerProxy(config.getEndpoint());
             proxy.add(1, requestHandler);
             proxy.startWorkers();
+            LOG.info("listening @ " + config.getEndpoint());
             return true;
         }
         return false;
@@ -86,6 +96,7 @@ public abstract class Server<T extends Request > implements AutoCloseable {
             proxy.shutdown();
             proxy = null;
         }
+        LOG.info("shutted down");
     }
 
 }
